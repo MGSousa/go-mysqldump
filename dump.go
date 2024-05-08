@@ -186,7 +186,7 @@ func (data *Data) Dump() error {
 
 // MARK: - Private methods
 
-// begin starts a read only transaction that will be whatever the database was
+// begin starts a read-only transaction that will be whatever the database was
 // when it was called
 func (data *Data) begin() (err error) {
 	data.tx, err = data.Connection.BeginTx(context.Background(), &sql.TxOptions{
@@ -201,7 +201,7 @@ func (data *Data) rollback() error {
 	return data.tx.Rollback()
 }
 
-// MARK: writter methods
+// MARK: writer methods
 
 func (data *Data) dumpTable(name string) error {
 	if data.err != nil {
@@ -389,13 +389,13 @@ func (table *table) Init() error {
 }
 
 func reflectColumnType(tp *sql.ColumnType) reflect.Type {
-	// reflect for scanable
+	// reflect for scannable
 	switch tp.ScanType().Kind() {
-	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Uint32, reflect.Uint64:
 		return reflect.TypeOf(sql.NullInt64{})
 	case reflect.Float32, reflect.Float64:
 		return reflect.TypeOf(sql.NullFloat64{})
-	case reflect.String:
+	case reflect.String, reflect.Struct:
 		return reflect.TypeOf(sql.NullString{})
 	}
 
@@ -409,6 +409,8 @@ func reflectColumnType(tp *sql.ColumnType) reflect.Type {
 		return reflect.TypeOf(sql.NullInt64{})
 	case "DOUBLE":
 		return reflect.TypeOf(sql.NullFloat64{})
+	case "DATETIME", "TIMESTAMP":
+		return reflect.TypeOf(sql.NullTime{})
 	}
 
 	// unknown datatype
